@@ -20,7 +20,7 @@ var salesforce = {
             headers: { "Content-Type": "application/json" }
         };
         
-        client.post("https://ap4.salesforce.com/services/oauth2/token?grant_type=password&client_id=" 
+        client.post("https://na88.salesforce.com/services/oauth2/token?grant_type=password&client_id=" 
         + config.sf_client_id + "&client_secret=" + config.sf_client_secret 
         + "&username=" + config.sf_user_name + "&password=" + config.sf_password, args, function (data) {
             access_token = data.access_token;
@@ -31,8 +31,6 @@ var salesforce = {
 
 function fetchGuestsForSalesforce(){
     var call_stored_proc = "CALL sp_GetGuestsForSalesforce()";
-
-    console.log(call_stored_proc);
 
     connection.query(call_stored_proc, true, (error, results) => {
     if (error) {
@@ -74,14 +72,16 @@ function insertGuestDetails(guest_id, first_name, last_name, email_id, phone_no,
                     State : state,
                     PostalCode : zip_code,
                     Country : countries[country_id],
-                    Company : "Parmarth Niketan"
+                    Company : "PN Reservations App"
                 },
             headers: { "Content-Type": "application/json", "Authorization": "Bearer " + access_token }
         };
         
-        client.post("https://ap4.my.salesforce.com/services/data/v21.0/sobjects/Lead", args, function (data) {
+        client.post("https://na88.my.salesforce.com/services/data/v21.0/sobjects/Lead", args, function (data) {
 
         var item = data;
+
+        if (item.id != undefined){
 
             var call_stored_proc = "CALL sp_UpdateGuestSalesForceID('" 
             + guest_id + "','"
@@ -93,6 +93,9 @@ function insertGuestDetails(guest_id, first_name, last_name, email_id, phone_no,
                 return res.send(error.code);
             }
             });
+        } else{
+            errorController.LogError(error);
+        }
         });
 }
 
@@ -107,13 +110,12 @@ function updateGuestDetails(sf_id, first_name, last_name, email_id, phone_no, ad
                 City : city,
                 State : state,
                 PostalCode : zip_code,
-                Country : countries[country_id],
-                Company : "Parmarth Niketan"
+                Country : countries[country_id]
             },
         headers: { "Content-Type": "application/json", "Authorization": "Bearer " + access_token }
     };
     
-    client.patch("https://ap4.salesforce.com/services/data/v35.0/sobjects/Lead/" + sf_id, args, function (data) {
+    client.patch("https://na88.salesforce.com/services/data/v35.0/sobjects/Lead/" + sf_id, args, function (data) {
     });
 }
 
